@@ -16,4 +16,5 @@ public:
     string getTip();
     double getPretBaza();
     void afisare(); 
+    double calculeazaPret(string ziSaptamana);
 };

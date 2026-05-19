@@ -21,3 +21,15 @@ void Film::afisare() {
          << " | Tip: " << tip 
          << " | Pret: " << pretBaza << " lei" << endl;
 }
+double Film::calculeazaPret(string ziSaptamana) {
+    double pret = pretBaza;
+
+    if (tip == "3D") {
+        pret += 10.0;
+    }
+    if (ziSaptamana == "sambata" || ziSaptamana == "duminica") {
+        pret += 5.0;
+    }
+
+    return pret;
+}
