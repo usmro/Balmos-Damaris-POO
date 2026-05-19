@@ -1,11 +1,12 @@
 #pragma once
+#include "ICinemaService.h"
 #include <vector>
-#include "Film.h"
 #include "Sala.h"
 #include "Rezervare.h"
 using namespace std;
 
-class Cinematograf {
+class Cinematograf : public ICinemaService 
+{
 private:
     string nume;
     vector<Film> filme;
