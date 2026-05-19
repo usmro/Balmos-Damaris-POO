@@ -3,6 +3,7 @@
 #include "Sala.h"
 #include "Rezervare.h"
 #include "Cinematograf.h"
+#include "RezervareOnline.h"
 using namespace std;
 
 int main() {
@@ -31,6 +32,14 @@ int main() {
     } catch (out_of_range& e) {
         cout << "Eroare: " << e.what() << endl;
     }
+    cout << "\n--- Rezervare Online ---" << endl;
+try {
+    RezervareOnline ro(f2, s1, 1, 1, "damaris@email.com");
+    s1.ocupaLoc(1, 1);
+    ro.afisare();
+} catch (runtime_error& e) {
+    cout << "Eroare: " << e.what() << endl;
+}
 
     return 0;
 }
