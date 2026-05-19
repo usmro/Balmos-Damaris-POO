@@ -27,7 +27,12 @@ bool Sala::esteLiber(int rand, int col) {
 }
 
 void Sala::ocupaLoc(int rand, int col) {
+    if (rand < 0 || rand >= randuri || col < 0 || col >= coloane) {
+        throw out_of_range("Index invalid! Randul sau coloana nu exista.");
+    }
+    if (locuri[rand][col] == 1) {
+        throw runtime_error("Locul este deja ocupat!");
+    }
     locuri[rand][col] = 1;
 }
-
 int Sala::getId() { return id; }
