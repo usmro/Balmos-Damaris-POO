@@ -4,7 +4,7 @@
 
 ```bash
 cd src
-g++ rezervari_cinema.cpp film.cpp sala.cpp rezervare.cpp cinematograf.cpp -o app.exe
+g++ rezervari_cinema.cpp film.cpp sala.cpp rezervare.cpp cinematograf.cpp RezervareOnline.cpp -o app.exe
 ./app.exe
 ```
 
