@@ -2,7 +2,7 @@
 #include "ICinemaService.h"
 #include <vector>
 #include "Sala.h"
-#include "Rezervare.h"
+#include "rezervare.h"
 using namespace std;
 
 class Cinematograf : public ICinemaService 

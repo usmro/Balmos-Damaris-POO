@@ -1,6 +1,6 @@
 #pragma once
-#include "Film.h"
-#include "Sala.h"
+#include "film.h"
+#include "sala.h"
 using namespace std;
 
 class Rezervare {

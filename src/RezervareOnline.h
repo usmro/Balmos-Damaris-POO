@@ -1,5 +1,5 @@
 #pragma once
-#include "Rezervare.h"
+#include "rezervare.h"
 #include <string>
 using namespace std;
 

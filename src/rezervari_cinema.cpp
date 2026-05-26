@@ -1,8 +1,8 @@
 #include <iostream>
-#include "Film.h"
-#include "Sala.h"
-#include "Rezervare.h"
-#include "Cinematograf.h"
+#include "film.h"
+#include "sala.h"
+#include "rezervare.h"
+#include "cinematograf.h"
 #include "RezervareOnline.h"
 using namespace std;
 

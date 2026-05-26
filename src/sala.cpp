@@ -1,4 +1,4 @@
-#include "Sala.h"
+#include "sala.h"
 #include <iostream>
 using namespace std;
 
