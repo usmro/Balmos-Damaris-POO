@@ -90,16 +90,15 @@ int main() {
         else if (tasta == 13) { // Tasta ENTER
             curataEcranul();
             
-            // !!! LINIA MAGICĂ !!!
-            // Curățăm complet orice Enter sau tastă rămasă în buffer înainte de a cere date prin cin
+
             cin.clear();
             
-            // 1. Afisare filme disponibile
+
             if (pozitie == 0) {
                 cout << BOLD << CYAN << "--- FILME DISPONIBILE ---\n" << RESET;
                 cinema.afisareFilme();
             } 
-            // 2. Afisare harta locuri sala
+
             else if (pozitie == 1) {
                 int idSala;
                 cout << "Introduceti ID-ul salii (ex: 1): ";
@@ -108,7 +107,7 @@ int main() {
                     cinema.afisareLocuri(idSala);
                 }
             } 
-            // 3. Realizeaza rezervare standard
+
             else if (pozitie == 2) {
                 int idSala, rand, col;
                 cout << BOLD << CYAN << "--- REZERVARE STANDARD ---\n" << RESET;
@@ -124,7 +123,7 @@ int main() {
                     cout << ROSU << "\nEroare la rezervare: " << e.what() << RESET << endl;
                 }
             } 
-            // 4. Realizeaza rezervare online
+
             else if (pozitie == 3) {
                 int rand, col;
                 string email;
@@ -143,7 +142,7 @@ int main() {
                     cout << ROSU << "\nEroare online: " << e.what() << RESET << endl;
                 }
             } 
-            // 5. Calculeaza pret bilet estimativ
+
             else if (pozitie == 4) {
                 string zi;
                 cout << BOLD << GALBEN << "--- CALCULATOR PRET BILET ---\n" << RESET;
@@ -151,13 +150,13 @@ int main() {
                 cout << "\nPret estimativ Inception (2D): " << VERDE << f1.calculeazaPret(zi) << " lei" << RESET << endl;
                 cout << "\nPret estimativ Avatar (3D): " << VERDE << f2.calculeazaPret(zi) << " lei" << RESET << endl;
             } 
-            // 0. Iesire aplicatie
+
             else if (pozitie == 5) {
                 cout << BOLD << CYAN << "Iesire din aplicatie. O zi buna!" << RESET << endl;
                 break;
             }
             
-            // Ignorăm restul caracterelor din buffer înainte de a ne întoarce la meniul cu săgeți
+
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             
