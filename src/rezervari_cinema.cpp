@@ -24,13 +24,19 @@ void activeazaCuloriWindows() {
     if (!GetConsoleMode(hOut, &dwMode)) return;
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
+    
+    // Setam consola pe UTF-8 pentru a randa perfect marginile duble (grafica ASCII)
+    SetConsoleOutputCP(65001); 
 }
 void emiteSunet(int frecventa, int durata) {
     Beep(frecventa, durata);
 }
+#else
+void activeazaCuloriWindows() {}
+void emiteSunet(int frecventa, int durata) {} 
 #endif
 
-// Constante pentru design profesional ANSI
+// Constante pentru culori ANSI
 const string RESET     = "\033[0m";
 const string SELECTAT  = "\033[44m\033[1m\033[37m"; // Fundal Albastru, Text Alb Bold
 const string CYAN      = "\033[36m";
@@ -39,23 +45,16 @@ const string ROSU      = "\033[31m";
 const string VERDE     = "\033[32m";
 const string GALBEN    = "\033[33m";
 const string ALBASTRU  = "\033[34m";
-const string LINIE     = "\033[38;5;244m"; // Gri pentru delimitatoare
 
-void curataEcranul() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-}
-
-void deseneazaInterfataFixa(int selectieCurenta) {
-    curataEcranul();
-    cout << CYAN << "========================================================================" << RESET << endl;
-    cout << BOLD << ALBASTRU << "                     SISTEM REZERVARI CINEMA - CONSOLA PRO" << RESET << endl;
-    cout << CYAN << "========================================================================" << RESET << endl;
-    cout << " Navigati cu " << BOLD << "Sagetile (Sus/Jos)" << RESET << " sau " << BOLD << "W/S" << RESET << ". Selectati cu tasta " << BOLD << "ENTER" << RESET << "." << endl;
-    cout << LINIE << "------------------------------------------------------------------------" << RESET << endl;
+// Funcție care redesenează DOAR meniul, lăsând restul ecranului intact!
+void deseneazaMeniuPersistent(int selectieCurenta, const string& status) {
+    cout << "\033[H"; // Magia: Mută cursorul stânga-sus FĂRĂ să șteargă ecranul!
+    
+    cout << CYAN << "╔══════════════════════════════════════════════════════════════════════╗\n";
+    cout << "║" << BOLD << ALBASTRU << "               SISTEM REZERVARI CINEMA - DASHBOARD PRO                " << RESET << CYAN << "║\n";
+    cout << "╠══════════════════════════════════════════════════════════════════════╣\n";
+    cout << "║" << RESET << " Navigare: W/S sau Sageti | Selectare: ENTER                          " << CYAN << "║\n";
+    cout << "╠══════════════════════════════════════════════════════════════════════╣\n" << RESET;
 
     string optiuni[] = {
         "1. Afisare program complet filme",
@@ -66,20 +65,33 @@ void deseneazaInterfataFixa(int selectieCurenta) {
         "0. Iesire securizata aplicatie"
     };
 
+    // Desenăm opțiunile aliniate perfect în cutie
     for(int i = 0; i < 6; i++) {
+        cout << CYAN << "║ ";
         if(i == selectieCurenta) {
-            cout << SELECTAT << "  ► " << optiuni[i] << "   " << RESET << endl;
+            string text = "  > " + optiuni[i];
+            cout << SELECTAT << text << string(66 - text.length(), ' ') << RESET << CYAN << " ║\n";
         } else {
-            cout << "    " << optiuni[i] << endl;
+            string text = "    " + optiuni[i];
+            cout << RESET << text << string(66 - text.length(), ' ') << CYAN << " ║\n";
         }
     }
-    cout << CYAN << "========================================================================" << RESET << endl;
-    cout << BOLD << " ZONA AFISARE REZULTATE: " << RESET << endl;
-    cout << LINIE << "------------------------------------------------------------------------" << RESET << endl;
+    cout << "╠══════════════════════════════════════════════════════════════════════╣\n";
+    
+    // Afișăm statusul dinamic la baza meniului
+    string statusText = " STATUS: " + status;
+    if(statusText.length() < 68) statusText.append(68 - statusText.length(), ' ');
+    else statusText = statusText.substr(0, 68);
+    
+    cout << "║" << GALBEN << BOLD << statusText << RESET << CYAN << "║\n";
+    cout << "╚══════════════════════════════════════════════════════════════════════╝\n" << RESET;
 }
 
 int main() {
     activeazaCuloriWindows();
+
+    // Curățăm tot ecranul o singură dată la pornirea aplicației
+    cout << "\033[2J\033[H"; 
 
     Cinematograf cinema("Cinema City Suceava");
     Film f1("Inception", "SciFi", 148, "2D", 25.0);
@@ -92,125 +104,143 @@ int main() {
 
     int pozitie = 0;
     int tasta;
-    string zonaRezultate = " Selectati o optiune din meniul de mai sus pentru a genera date active.";
+    string status = "Sistem initializat. Asteptare comenzi.";
 
     while (true) {
-        deseneazaInterfataFixa(pozitie);
-        cout << zonaRezultate << endl;
-        cout << LINIE << "------------------------------------------------------------------------" << RESET << endl;
-        
+        deseneazaMeniuPersistent(pozitie, status);
         tasta = _getch();
 
 
         if (tasta == 'w' || tasta == 'W' || tasta == 72) { 
             if (pozitie > 0) {
                 pozitie--;
-                emiteSunet(600, 30); // Sunet click discret la navigare
+                status = "Navigare...";
+                emiteSunet(600, 30); 
             }
         } 
         else if (tasta == 's' || tasta == 'S' || tasta == 80) { 
             if (pozitie < 5) {
                 pozitie++;
+                status = "Navigare...";
                 emiteSunet(600, 30);
             }
         } 
-        else if (tasta == 13) { // Tasta ENTER
-            emiteSunet(800, 50); // Sunet de selectie
+        else if (tasta == 13) { // Când se apasă ENTER
+            emiteSunet(800, 50); 
             cin.clear();
             
+            // Această comandă șterge DOAR ce este sub meniu (linia 15 în jos) pregătind zona pentru date noi
+            cout << "\033[15;1H\033[0J"; 
+            
             if (pozitie == 0) {
-                // Pentru a prelua output-ul functiilor fara a rescrie clasele, mutam executia direct sub meniu
-                deseneazaInterfataFixa(pozitie);
-                cout << BOLD << CYAN << " [PROGRAM FILME ACTIVE]\n" << RESET;
+                status = "Lista filmelor a fost generata.";
+                deseneazaMeniuPersistent(pozitie, status); // Actualizăm bara de status
+                cout << "\033[15;1H\033[0J"; // Ne asigurăm că zona e curată
+                
+                cout << BOLD << CYAN << "\n [PROGRAM FILME ACTIVE]\n\n" << RESET;
                 cinema.afisareFilme();
-                cout << "\n" << GALBEN << "Apasati orice tasta pentru a debloca meniul...";
-                _getch();
+
             } 
 
             else if (pozitie == 1) {
-                deseneazaInterfataFixa(pozitie);
+                status = "Asteptare introducere ID sala...";
+                deseneazaMeniuPersistent(pozitie, status);
+                cout << "\033[15;1H\033[0J";
+                
                 int idSala;
-                cout << " Introduceti ID-ul salii (ex: 1): ";
+                cout << "\n Introduceti ID-ul salii (ex: 1): ";
                 if (cin >> idSala) {
-                    deseneazaInterfataFixa(pozitie);
-                    cout << BOLD << CYAN << " [STARE LOCURI SALA " << idSala << "]\n" << RESET;
+                    cout << BOLD << CYAN << "\n [STARE LOCURI SALA " << idSala << "]\n\n" << RESET;
                     cinema.afisareLocuri(idSala);
+                    status = "Harta a fost generata cu succes.";
+                } else {
+                    status = "Eroare la citire ID.";
                 }
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "\n" << GALBEN << "Apasati orice tasta pentru a debloca meniul...";
-                _getch();
+
             } 
 
             else if (pozitie == 2) {
-                deseneazaInterfataFixa(pozitie);
+                status = "Se proceseaza rezervarea standard...";
+                deseneazaMeniuPersistent(pozitie, status);
+                cout << "\033[15;1H\033[0J";
+                
                 int idSala, rand, col;
-                cout << BOLD << CYAN << " [REZERVARE STANDARD]\n" << RESET;
+                cout << BOLD << CYAN << "\n [REZERVARE STANDARD]\n\n" << RESET;
                 cout << " ID Sala: "; cin >> idSala;
                 cout << " Rand: "; cin >> rand;
                 cout << " Coloana: "; cin >> col;
 
-                deseneazaInterfataFixa(pozitie);
+
                 try {
                     cinema.realizeazaRezervare(idSala, f1, rand, col);
-                    zonaRezultate = VERDE + " [SUCCES] Scaunul de la casierie a fost ocupat si confirmat în baza de date!" + RESET;
-                    emiteSunet(1000, 200); // Sunet de succes
+                    status = "SUCCES: Rezervare confirmata in sistem!";
+                    cout << VERDE << "\n [CONFIRMARE] Locul a fost rezervat cu succes!\n" << RESET;
+                    emiteSunet(1000, 200); 
                 }
                 catch (const exception &e) {
-                    zonaRezultate = ROSU + " [EROARE] " + e.what() + RESET;
-                    emiteSunet(400, 300); // Sunet grav de eroare
+                    status = "EROARE: Tranzactie respinsa.";
+                    cout << ROSU << "\n [EROARE SISTEM] " << e.what() << "\n" << RESET;
+                    emiteSunet(400, 300); 
                 }
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             } 
 
             else if (pozitie == 3) {
-                deseneazaInterfataFixa(pozitie);
+                status = "Se proceseaza rezervarea online...";
+                deseneazaMeniuPersistent(pozitie, status);
+                cout << "\033[15;1H\033[0J";
+                
                 int rand, col;
                 string email;
-                cout << BOLD << CYAN << " [REZERVARE ONLINE]\n" << RESET;
+                cout << BOLD << CYAN << "\n [REZERVARE ONLINE]\n\n" << RESET;
                 cout << " Introduceti email client: "; cin >> email;
                 cout << " Rand: "; cin >> rand;
                 cout << " Coloana: "; cin >> col;
 
-                deseneazaInterfataFixa(pozitie);
+
                 try {
                     s1.ocupaLoc(rand, col);
                     RezervareOnline ro(f2, s1, rand, col, email);
-                    cout << VERDE << " [BILET ONLINE GENERAT]\n" << RESET;
+                    status = "SUCCES: Bilet trimis pe email!";
+                    cout << VERDE << "\n [BILET ONLINE GENERAT]\n\n" << RESET;
                     ro.afisare();
-                    zonaRezultate = VERDE + " [SUCCES] Confirmarea a fost expediata pe adresa: " + email + RESET;
+
                     emiteSunet(1000, 200);
+
                 }
                 catch (const exception &e) {
-                    zonaRezultate = ROSU + " [EROARE ONLINE] " + e.what() + RESET;
+                    status = "EROARE: Generare bilet online esuata.";
+                    cout << ROSU << "\n [EROARE SISTEM] " << e.what() << "\n" << RESET;
                     emiteSunet(400, 300);
                 }
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "\n" << GALBEN << "Apasati orice tasta pentru a debloca meniul...";
-                _getch();
+
             } 
 
             else if (pozitie == 4) {
-                deseneazaInterfataFixa(pozitie);
+                status = "Asteptare introducere zi...";
+                deseneazaMeniuPersistent(pozitie, status);
+                cout << "\033[15;1H\033[0J";
+                
                 string zi;
-                cout << BOLD << GALBEN << " [CALCULATOR DINAMIC PRET]\n" << RESET;
+                cout << BOLD << GALBEN << "\n [CALCULATOR DINAMIC PRET]\n\n" << RESET;
                 cout << " Introduceti ziua saptamanii (ex: luni, duminica): "; cin >> zi;
                 
-                deseneazaInterfataFixa(pozitie);
-                cout << BOLD << GALBEN << " [TARIFE ESTIMATE PENTRU ZIUA: " << zi << "]\n" << RESET;
-                cout << "  • Inception (Tehnologie 2D): " << VERDE << f1.calculeazaPret(zi) << " lei" << RESET << endl;
-                cout << "  • Avatar (Tehnologie 3D):    " << VERDE << f2.calculeazaPret(zi) << " lei" << RESET << endl;
-                zonaRezultate = GALBEN + " [INFO] Tariful include automat taxele de weekend si optiunile 3D." + RESET;
+                cout << BOLD << GALBEN << "\n [TARIFE ESTIMATE PENTRU ZIUA: " << zi << "]\n\n" << RESET;
+                cout << "  - Inception (Tehnologie 2D): " << VERDE << f1.calculeazaPret(zi) << " lei\n" << RESET;
+                cout << "  - Avatar (Tehnologie 3D):    " << VERDE << f2.calculeazaPret(zi) << " lei\n" << RESET;
                 
+                status = "Calculator pret actualizat cu succes.";
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "\n" << GALBEN << "Apasati orice tasta pentru a debloca meniul...";
-                _getch();
+
             } 
             else if (pozitie == 5) {
-                curataEcranul();
+                cout << "\033[2J\033[H"; // Curăță tot pentru ieșire
                 cout << BOLD << ALBASTRU << "Sistemul s-a inchis securizat. O zi buna!" << RESET << endl;
                 emiteSunet(500, 100);
                 break;
